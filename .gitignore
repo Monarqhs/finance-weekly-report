@@ -1,0 +1,12 @@
+# JANGAN pernah commit kredensial Google
+credentials.json
+token.json
+
+# Output preview
+preview.html
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
