@@ -48,7 +48,7 @@ SINYAL_RULES = {
 # --- Watchlist pantauan (DIPANTAU harganya, TANPA alokasi/bobot) ---
 # Perusahaan tema serupa yang ingin kita awasi tanpa wajib beli.
 WATCHLIST = {
-    "SK Hynix": {"ticker": "000660.KS", "catatan": "Pesaing langsung MU di DRAM/HBM — ikut siklus memori yang sama. Harga dalam KRW (Bursa Korea)."},
+    "SK Hynix": {"ticker": "000660.KS", "mata_uang": "₩", "catatan": "Pesaing langsung MU di DRAM/HBM — ikut siklus memori yang sama. Listing di Bursa Korea, harga dalam Won (KRW)."},
 }
 
 # --- Pantauan Geopolitik (tesis inti: perang semikonduktor) ---
