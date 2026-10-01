@@ -28,6 +28,7 @@ _YAHOO_MAP = {
     "AMD": "AMD",
     "VOO": "VOO",
     "GC=F": "GC%3DF",   # emas (Gold futures)
+    "000660.KS": "000660.KS",  # SK Hynix (Bursa Korea, KRW)
     "IDR=X": "IDR%3DX",
 }
 

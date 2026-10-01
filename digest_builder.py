@@ -37,6 +37,38 @@ LINE = "#eceff3"
 CARD = "#f7f8fa"
 
 
+def _watchlist_rows() -> str:
+    """Baris untuk Watchlist (pantauan, tanpa posisi). Fetch harga sendiri."""
+    wl = getattr(config, "WATCHLIST", {})
+    if not wl:
+        return ""
+    from market_data import fetch_prices
+    tickers = [v["ticker"] for v in wl.values() if v.get("ticker")]
+    prices = fetch_prices(tickers)
+    out = []
+    for nama, info in wl.items():
+        tkr = info.get("ticker")
+        catatan = info.get("catatan", "")
+        m = prices.get(tkr, {})
+        if m and "error" not in m:
+            harga = f'<span style="font-weight:600">{m["price"]:,.2f}</span>'
+            c1w = m.get("change_pct_1w", 0.0)
+            chg = f'<span style="color:{_pct_color(c1w)}">{_fmt_pct(c1w)}</span>'
+        else:
+            harga = f'<span style="color:{FAINT}">n/a</span>'
+            chg = f'<span style="color:{FAINT}">—</span>'
+        out.append(f"""
+        <tr>
+          <td style="padding:12px;border-bottom:1px solid {LINE};vertical-align:top">
+            <div style="font-weight:600;color:{INK}">{nama}</div>
+            <div style="color:{SUBTLE};font-size:12px;line-height:1.45;margin-top:2px">{catatan}</div>
+          </td>
+          <td style="padding:12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{harga}</td>
+          <td style="padding:12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{chg}<div style="color:{FAINT};font-size:10px">1 mgg</div></td>
+        </tr>""")
+    return "".join(out)
+
+
 def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, str]:
     """Kembalikan (subject, html_body)."""
     today = dt.date.today()
@@ -128,6 +160,11 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
         </tr>
       </thead>
       <tbody>{''.join(rows)}</tbody>
+    </table>
+
+    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🔭 Watchlist — Pantauan (tanpa posisi)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px">
+      <tbody>{_watchlist_rows()}</tbody>
     </table>
 
     <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🌏 Pantauan Geopolitik — Perang Semikonduktor</div>
