@@ -50,8 +50,9 @@ def _watchlist_rows() -> str:
         tkr = info.get("ticker")
         catatan = info.get("catatan", "")
         m = prices.get(tkr, {})
+        simbol = info.get("mata_uang", "$")
         if m and "error" not in m:
-            harga = f'<span style="font-weight:600">{m["price"]:,.2f}</span>'
+            harga = f'<span style="font-weight:600">{simbol}{m["price"]:,.0f}</span>'
             c1d, c1w = m.get("change_pct_1d", 0.0), m.get("change_pct_1w", 0.0)
             chg1d = f'<span style="color:{_pct_color(c1d)}">{_fmt_pct(c1d)}</span>'
             chg1w = f'<span style="color:{_pct_color(c1w)}">{_fmt_pct(c1w)}</span>'
