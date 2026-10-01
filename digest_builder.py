@@ -52,19 +52,29 @@ def _watchlist_rows() -> str:
         m = prices.get(tkr, {})
         if m and "error" not in m:
             harga = f'<span style="font-weight:600">{m["price"]:,.2f}</span>'
-            c1w = m.get("change_pct_1w", 0.0)
-            chg = f'<span style="color:{_pct_color(c1w)}">{_fmt_pct(c1w)}</span>'
+            c1d, c1w = m.get("change_pct_1d", 0.0), m.get("change_pct_1w", 0.0)
+            chg1d = f'<span style="color:{_pct_color(c1d)}">{_fmt_pct(c1d)}</span>'
+            chg1w = f'<span style="color:{_pct_color(c1w)}">{_fmt_pct(c1w)}</span>'
         else:
             harga = f'<span style="color:{FAINT}">n/a</span>'
-            chg = f'<span style="color:{FAINT}">—</span>'
+            chg1d = chg1w = f'<span style="color:{FAINT}">—</span>'
+        badge = (
+            '<span style="display:inline-block;background:#f5f3ff;color:#6d28d9;'
+            'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">PANTAUAN</span>'
+        )
         out.append(f"""
         <tr>
-          <td style="padding:12px;border-bottom:1px solid {LINE};vertical-align:top">
+          <td style="padding:14px 12px;border-bottom:1px solid {LINE};vertical-align:top">
             <div style="font-weight:600;color:{INK}">{nama}</div>
-            <div style="color:{SUBTLE};font-size:12px;line-height:1.45;margin-top:2px">{catatan}</div>
+            <div style="color:{SUBTLE};font-size:12px;margin-top:2px">— (tanpa posisi)</div>
           </td>
-          <td style="padding:12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{harga}</td>
-          <td style="padding:12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{chg}<div style="color:{FAINT};font-size:10px">1 mgg</div></td>
+          <td style="padding:14px 12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{harga}</td>
+          <td style="padding:14px 12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{chg1d}</td>
+          <td style="padding:14px 12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{chg1w}</td>
+          <td style="padding:14px 12px;border-bottom:1px solid {LINE};font-size:12px;vertical-align:top">
+            <div style="margin-bottom:3px">{badge}</div>
+            <div style="color:{SUBTLE};line-height:1.45">{catatan}</div>
+          </td>
         </tr>""")
     return "".join(out)
 
@@ -162,8 +172,17 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
       <tbody>{''.join(rows)}</tbody>
     </table>
 
-    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🔭 Watchlist — Pantauan (tanpa posisi)</div>
+    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🔭 Watchlist Semikonduktor — Pantauan (belum ada posisi)</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px">
+      <thead>
+        <tr style="text-align:left;color:{SUBTLE};font-size:11px;letter-spacing:.03em;text-transform:uppercase">
+          <th style="padding:0 12px 8px">Instrumen</th>
+          <th style="padding:0 12px 8px;text-align:right">Harga</th>
+          <th style="padding:0 12px 8px;text-align:right">1 Hari</th>
+          <th style="padding:0 12px 8px;text-align:right">1 Minggu</th>
+          <th style="padding:0 12px 8px">Status &amp; Catatan</th>
+        </tr>
+      </thead>
       <tbody>{_watchlist_rows()}</tbody>
     </table>
 
