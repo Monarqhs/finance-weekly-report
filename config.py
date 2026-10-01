@@ -45,6 +45,12 @@ SINYAL_RULES = {
     "GC=F": {"catatan": "Lindung nilai: cenderung naik saat tensi geopolitik AS–China memanas."},
 }
 
+# --- Watchlist pantauan (DIPANTAU harganya, TANPA alokasi/bobot) ---
+# Perusahaan tema serupa yang ingin kita awasi tanpa wajib beli.
+WATCHLIST = {
+    "SK Hynix": {"ticker": "000660.KS", "catatan": "Pesaing langsung MU di DRAM/HBM — ikut siklus memori yang sama. Harga dalam KRW (Bursa Korea)."},
+}
+
 # --- Pantauan Geopolitik (tesis inti: perang semikonduktor) ---
 # Ditampilkan sebagai checklist di email agar monitoring mingguan tetap sadar-risiko.
 GEOPOLITIK_WATCH = [
