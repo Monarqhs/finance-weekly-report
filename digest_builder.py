@@ -46,11 +46,21 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
     kurs_note = "" if usdidr else " (perkiraan)"
 
     rows = []
+    grup_terakhir = None
     for nama, info in config.PORTFOLIO.items():
         tkr = info["ticker"]
         bobot = info["bobot"]
+        grup = info.get("grup", "")
         rupiah = config.MODAL_TRANCHE * bobot
         alokasi = f"{bobot*100:.1f}% · {_rupiah(rupiah)}"
+
+        # Sub-header grup (Semikonduktor / Penyeimbang / Kas) — hanya saat grup berganti.
+        if grup and grup != grup_terakhir:
+            rows.append(f"""
+        <tr><td colspan="5" style="padding:16px 12px 6px;border-bottom:1px solid {LINE}">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:{FAINT}">{grup}</span>
+        </td></tr>""")
+            grup_terakhir = grup
 
         if tkr and tkr in prices and "error" not in prices[tkr]:
             m = prices[tkr]
@@ -82,7 +92,7 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
                 'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
                 'KAS · LIKUID</span>'
             )
-            catatan = "Instrumen kas: nilai stabil, tanpa harga pasar harian. Bantalan + titipan untuk MU/AMD."
+            catatan = "Instrumen kas (BRI Seruni Pasar Uang III): nilai stabil, likuid. Amunisi untuk menambah posisi saat koreksi."
 
         rows.append(f"""
         <tr>
@@ -119,6 +129,13 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
       </thead>
       <tbody>{''.join(rows)}</tbody>
     </table>
+
+    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🌏 Pantauan Geopolitik — Perang Semikonduktor</div>
+    <div style="background:{CARD};border-radius:10px;padding:6px 4px">
+      <ul style="margin:0;padding:12px 18px 12px 30px;font-size:12px;color:{SUBTLE};line-height:1.6">
+        {''.join(f'<li style="margin-bottom:6px">{item}</li>' for item in config.GEOPOLITIK_WATCH)}
+      </ul>
+    </div>
 
     <div style="background:{CARD};border-radius:10px;padding:14px 18px;margin-top:22px;font-size:12px;color:{SUBTLE};line-height:1.5">
       ⚠️ <b style="color:{INK}">Disclaimer:</b> Sinyal berbasis momentum harga sederhana, BUKAN nasihat investasi pasti.

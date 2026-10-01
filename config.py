@@ -19,13 +19,16 @@ TOKEN_FILE = BASE_DIR / "token.json"               # dibuat otomatis setelah log
 EMAIL_TO = os.environ.get("EMAIL_TO", "ghalihyulio12@gmail.com")
 EMAIL_SUBJECT_PREFIX = "📊 Digest Portofolio"
 
-# --- Portofolio (alokasi target sesuai plan DCA Okt-Feb) ---
-# bobot mengikuti aturan kita: 40% aman / 35% ETF / 12.5% MU / 12.5% AMD
+# --- Portofolio (alokasi target — strategi Rp60jt overweight-semi + penyeimbang) ---
+# Komposisi AKHIR target (akumulasi Okt–Jan): semi ~60% · penyeimbang ~25% · kas ~15%.
+# "grup" dipakai digest untuk mengelompokkan baris: inti-semi / penyeimbang / kas.
 PORTFOLIO = {
-    "Kas Aman (RDPU)": {"bobot": 0.40,  "ticker": None},
-    "ETF SMH":         {"bobot": 0.35,  "ticker": "SMH"},
-    "Micron (MU)":     {"bobot": 0.125, "ticker": "MU"},
-    "AMD":             {"bobot": 0.125, "ticker": "AMD"},
+    "ETF SMH":            {"bobot": 0.35,  "ticker": "SMH", "grup": "Semikonduktor (inti)"},
+    "Micron (MU)":        {"bobot": 0.15,  "ticker": "MU",  "grup": "Semikonduktor (inti)"},
+    "AMD":                {"bobot": 0.10,  "ticker": "AMD", "grup": "Semikonduktor (inti)"},
+    "ETF S&P 500 (VOO)":  {"bobot": 0.15,  "ticker": "VOO", "grup": "Penyeimbang"},
+    "Emas":               {"bobot": 0.10,  "ticker": "GC=F","grup": "Penyeimbang"},
+    "Kas Aman (RDPU)":    {"bobot": 0.15,  "ticker": None,  "grup": "Kas"},
 }
 
 # Modal per tranche (untuk konteks di digest)
@@ -33,12 +36,24 @@ MODAL_TRANCHE = 10_000_000
 USDIDR_FALLBACK = 17_735  # dipakai kalau fetch kurs gagal
 
 # --- Aturan sinyal (dari kalender strategi kita) ---
-# ambang sederhana untuk sinyal beli/tahan pada saham satelit
+# ambang sederhana untuk sinyal beli/tahan pada tiap instrumen
 SINYAL_RULES = {
-    "MU":  {"catatan": "Tunggu reaksi pasca-earnings 1-2 hari sebelum beli. Tranche ~30 Okt (setelah FOMC)."},
-    "AMD": {"catatan": "Event earnings akhir Okt. Tahan sampai jadwal tranche."},
-    "SMH": {"catatan": "ETF inti - eksekusi sesuai jadwal DCA, tidak perlu tunggu event tunggal."},
+    "MU":   {"catatan": "RAM lagi langka, margin tinggi. Pantau produsen memori China (CXMT): kalau ramp HBM, harga RAM bisa turun dan menekan margin MU."},
+    "AMD":  {"catatan": "Momentum AI. Tahan sampai jadwal tranche; hindari kejar di euforia pasca-earnings."},
+    "SMH":  {"catatan": "ETF inti semikonduktor (~25 emiten). Eksekusi sesuai jadwal DCA, tak perlu tunggu event tunggal."},
+    "VOO":  {"catatan": "Penyeimbang: 500 perusahaan AS, meredam risiko konsentrasi sektor chip."},
+    "GC=F": {"catatan": "Lindung nilai: cenderung naik saat tensi geopolitik AS–China memanas."},
 }
+
+# --- Pantauan Geopolitik (tesis inti: perang semikonduktor) ---
+# Ditampilkan sebagai checklist di email agar monitoring mingguan tetap sadar-risiko.
+GEOPOLITIK_WATCH = [
+    "CXMT / YMTC (produsen memori China): tanda ramp produksi DRAM/HBM volume besar jadi sinyal harga RAM turun, waspada margin MU.",
+    "ASML & kontrol ekspor EUV/DUV: pengetatan AS-Belanda menjaga kelangkaan (positif chip); pelonggaran negatif.",
+    "Kebijakan AS-China: sanksi/tarif chip baru bisa menggerakkan seluruh posisi semi sekaligus.",
+    "The Fed (FOMC) & BI: arah suku bunga, pelonggaran umumnya suportif saham growth/semi.",
+    "Kurs USD/IDR: rupiah melemah menaikkan biaya entry aset USD (efek ke timing DCA).",
+]
 
 # --- Gmail API scope: hanya kirim (paling minim, aman) ---
 GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.send"]

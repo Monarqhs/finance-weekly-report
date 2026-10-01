@@ -21,11 +21,13 @@ import urllib.request
 _UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 _HOSTS = ("query1.finance.yahoo.com", "query2.finance.yahoo.com")
 
-# Simbol Yahoo untuk tiap instrumen. Kurs USD/IDR = "IDR=X" (perlu URL-encode '=').
+# Simbol Yahoo untuk tiap instrumen. '=' perlu di-URL-encode jadi '%3D'.
 _YAHOO_MAP = {
     "SMH": "SMH",
     "MU": "MU",
     "AMD": "AMD",
+    "VOO": "VOO",
+    "GC=F": "GC%3DF",   # emas (Gold futures)
     "IDR=X": "IDR%3DX",
 }
 
