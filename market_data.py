@@ -28,7 +28,7 @@ _YAHOO_MAP = {
     "AMD": "AMD",
     "VOO": "VOO",
     "GC=F": "GC%3DF",   # emas (Gold futures)
-    "SKHHY": "SKHHY",   # SK Hynix ADR di Nasdaq (USD) — listing 10 Jul 2026
+    "SKHY": "SKHY",   # SK Hynix ADR di Nasdaq GS (USD) — listing 10 Jul 2026, ~$193
     "000660.KS": "000660.KS",  # SK Hynix (Bursa Korea, KRW) — cadangan
     "IDR=X": "IDR%3DX",
 }
