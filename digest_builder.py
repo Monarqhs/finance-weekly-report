@@ -6,7 +6,7 @@ from __future__ import annotations
 import datetime as dt
 
 import config
-from market_data import signal_for
+from market_data import signal_detail
 
 
 def _fmt_usd(x: float) -> str:
@@ -35,6 +35,24 @@ SUBTLE = "#6b7280"
 FAINT = "#9ca3af"
 LINE = "#eceff3"
 CARD = "#f7f8fa"
+
+# Warna badge sinyal (bg, teks) sesuai kode warna dari signal_detail().
+_BADGE = {
+    "hijau":  ("#ecfdf5", "#047857"),  # BELI
+    "kuning": ("#fffbeb", "#b45309"),  # TAHAN / DCA tipis
+    "merah":  ("#fef2f2", "#dc2626"),  # HATI-HATI / data gagal
+    "abu":    ("#f3f4f6", "#4b5563"),  # NETRAL / data terbatas
+}
+
+
+def _signal_badge(detail: dict) -> str:
+    """Render badge berwarna dari {label, color}."""
+    bg, fg = _BADGE.get(detail.get("color", "abu"), _BADGE["abu"])
+    return (
+        f'<span style="display:inline-block;background:{bg};color:{fg};'
+        f'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
+        f'{detail["label"]}</span>'
+    )
 
 
 def _watchlist_rows() -> str:
@@ -88,6 +106,33 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
     kurs = usdidr or config.USDIDR_FALLBACK
     kurs_note = "" if usdidr else " (perkiraan)"
 
+    # Watchlist hanya ditampilkan kalau ada isinya (SK Hynix kini jadi posisi).
+    wl_rows = _watchlist_rows()
+    watchlist_section = f"""
+    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🔭 Watchlist Semikonduktor — Pantauan (belum ada posisi)</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px">
+      <thead>
+        <tr style="text-align:left;color:{SUBTLE};font-size:11px;letter-spacing:.03em;text-transform:uppercase">
+          <th style="padding:0 12px 8px">Instrumen</th>
+          <th style="padding:0 12px 8px;text-align:right">Harga</th>
+          <th style="padding:0 12px 8px;text-align:right">1 Hari</th>
+          <th style="padding:0 12px 8px;text-align:right">1 Minggu</th>
+          <th style="padding:0 12px 8px">Status &amp; Catatan</th>
+        </tr>
+      </thead>
+      <tbody>{wl_rows}</tbody>
+    </table>""" if wl_rows else ""
+
+    # Legenda penjelas sinyal dinamis (biar user paham arti warna/label).
+    legenda = f"""
+    <div style="background:{CARD};border-radius:10px;padding:12px 16px;margin-top:16px;font-size:11px;color:{SUBTLE};line-height:1.6">
+      <b style="color:{INK}">Cara baca sinyal (dihitung otomatis tiap minggu):</b><br>
+      🟢 <b>BELI</b> — tren naik (harga di atas SMA50 &amp; SMA200) &amp; RSI sehat/oversold (belum euforia).<br>
+      🟡 <b>TAHAN / DCA TIPIS</b> — tren naik tapi RSI &gt; 70 (overbought) — jangan kejar, DCA tipis.<br>
+      🔴 <b>HATI-HATI</b> — harga di bawah SMA200 (tren jangka panjang melemah).<br>
+      ⚪ <b>NETRAL</b> — konsolidasi / data historis belum cukup — DCA normal.
+    </div>"""
+
     rows = []
     grup_terakhir = None
     for nama, info in config.PORTFOLIO.items():
@@ -111,12 +156,14 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
             c1d, c1w = m["change_pct_1d"], m["change_pct_1w"]
             chg1d = f'<span style="color:{_pct_color(c1d)}">{_fmt_pct(c1d)}</span>'
             chg1w = f'<span style="color:{_pct_color(c1w)}">{_fmt_pct(c1w)}</span>'
-            sinyal = signal_for(tkr, m)
-            catatan = config.SINYAL_RULES.get(tkr, {}).get("catatan", "")
-            sinyal_html = (
-                f'<span style="display:inline-block;background:#eef2ff;color:#4338ca;'
-                f'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
-                f'{sinyal}</span>'
+            detail = signal_detail(tkr, m)
+            sinyal_html = _signal_badge(detail)
+            konteks = config.SINYAL_RULES.get(tkr, {}).get("catatan", "")
+            # Saran DINAMIS (berubah tiap minggu ikut harga) + konteks tesis statis.
+            saran = detail.get("saran", "")
+            catatan = (
+                f'<div style="color:{INK};font-weight:500;line-height:1.45;margin-bottom:4px">{saran}</div>'
+                f'<div style="color:{SUBTLE};line-height:1.45;font-size:11px">{konteks}</div>'
             )
         elif tkr:
             harga_html = chg1d = chg1w = f'<span style="color:{FAINT}">—</span>'
@@ -125,7 +172,8 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
                 'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
                 'DATA TIDAK TERSEDIA</span>'
             )
-            catatan = prices.get(tkr, {}).get("error", "")
+            err = prices.get(tkr, {}).get("error", "")
+            catatan = f'<div style="color:{SUBTLE};line-height:1.45">{err}</div>'
         else:
             # RDPU / instrumen kas — memang tidak punya harga pasar harian.
             harga_html = f'<span style="color:{FAINT}">n/a</span>'
@@ -135,7 +183,10 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
                 'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
                 'KAS · LIKUID</span>'
             )
-            catatan = "Instrumen kas (BRI Seruni Pasar Uang III): nilai stabil, likuid. Amunisi untuk menambah posisi saat koreksi."
+            catatan = (
+                f'<div style="color:{SUBTLE};line-height:1.45">Instrumen kas (BRI Seruni Pasar Uang III): '
+                f'nilai stabil, likuid. Amunisi untuk menambah posisi saat koreksi — porsi 20% khusus Oktober, diuji ulang November.</div>'
+            )
 
         rows.append(f"""
         <tr>
@@ -148,7 +199,7 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
           <td style="padding:14px 12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{chg1w}</td>
           <td style="padding:14px 12px;border-bottom:1px solid {LINE};font-size:12px;vertical-align:top">
             <div style="margin-bottom:3px">{sinyal_html}</div>
-            <div style="color:{SUBTLE};line-height:1.45">{catatan}</div>
+            {catatan}
           </td>
         </tr>""")
 
@@ -172,20 +223,8 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
       </thead>
       <tbody>{''.join(rows)}</tbody>
     </table>
-
-    <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🔭 Watchlist Semikonduktor — Pantauan (belum ada posisi)</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px">
-      <thead>
-        <tr style="text-align:left;color:{SUBTLE};font-size:11px;letter-spacing:.03em;text-transform:uppercase">
-          <th style="padding:0 12px 8px">Instrumen</th>
-          <th style="padding:0 12px 8px;text-align:right">Harga</th>
-          <th style="padding:0 12px 8px;text-align:right">1 Hari</th>
-          <th style="padding:0 12px 8px;text-align:right">1 Minggu</th>
-          <th style="padding:0 12px 8px">Status &amp; Catatan</th>
-        </tr>
-      </thead>
-      <tbody>{_watchlist_rows()}</tbody>
-    </table>
+    {legenda}
+    {watchlist_section}
 
     <div style="margin-top:26px;margin-bottom:8px;font-size:13px;font-weight:700;color:{INK}">🌏 Pantauan Geopolitik — Perang Semikonduktor</div>
     <div style="background:{CARD};border-radius:10px;padding:6px 4px">
@@ -195,8 +234,8 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
     </div>
 
     <div style="background:{CARD};border-radius:10px;padding:14px 18px;margin-top:22px;font-size:12px;color:{SUBTLE};line-height:1.5">
-      ⚠️ <b style="color:{INK}">Disclaimer:</b> Sinyal berbasis momentum harga sederhana, BUKAN nasihat investasi pasti.
-      Politik/kebijakan (FOMC, BI, kontrol ekspor chip) adalah lapisan risiko tambahan.
+      ⚠️ <b style="color:{INK}">Disclaimer:</b> Sinyal dihitung dari aturan teknikal (SMA50/SMA200, RSI-14, jarak dari puncak 52 minggu) — ini penanda <b>KONDISI</b>, BUKAN ramalan atau nasihat investasi pasti.
+      Politik/kebijakan (FOMC, BI, kontrol ekspor chip) adalah lapisan risiko tambahan yang tidak terbaca indikator harga.
       Keputusan akhir tetap di kamu.
     </div>
 
