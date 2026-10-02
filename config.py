@@ -27,7 +27,7 @@ EMAIL_SUBJECT_PREFIX = "📊 Digest Portofolio"
 PORTFOLIO = {
     "ETF SMH":            {"bobot": 0.35,  "ticker": "SMH",   "grup": "Semikonduktor (inti)"},
     "Micron (MU)":        {"bobot": 0.10,  "ticker": "MU",    "grup": "Semikonduktor (inti)"},
-    "SK Hynix (ADR)":     {"bobot": 0.10,  "ticker": "SKHHY", "grup": "Semikonduktor (inti)"},
+    "SK Hynix (ADR)":     {"bobot": 0.10,  "ticker": "SKHY",  "grup": "Semikonduktor (inti)"},
     "AMD":                {"bobot": 0.075, "ticker": "AMD",   "grup": "Semikonduktor (inti)"},
     "ETF S&P 500 (VOO)":  {"bobot": 0.075, "ticker": "VOO",   "grup": "Penyeimbang"},
     "Emas":               {"bobot": 0.10,  "ticker": "GC=F",  "grup": "Penyeimbang"},
@@ -43,7 +43,7 @@ USDIDR_FALLBACK = 17_735  # dipakai kalau fetch kurs gagal
 # dihitung DINAMIS oleh market_data.signal_detail() dari SMA50/SMA200/RSI/drawdown.
 SINYAL_RULES = {
     "MU":    {"catatan": "Dipangkas 15%→10% Okt; sebagian dialihkan ke SK Hynix (valuasi lebih murah). RAM langka, margin tinggi; pantau CXMT (China) — kalau ramp HBM, harga RAM bisa turun."},
-    "SKHHY": {"catatan": "Posisi BARU (ADR Nasdaq USD). Pemimpin HBM (56–58%), valuasi ~4,8x fwd P/E (lebih murah dari MU). Risiko: 'Korea discount' bisa bertahan lama; siklus memori sama dengan MU."},
+    "SKHY":  {"catatan": "Posisi BARU (ADR Nasdaq GS USD, ~$193). Pemimpin HBM (56–58%), valuasi ~4,8x fwd P/E (lebih murah dari MU). Baru listing 10 Jul 2026 → data historis <200 hari, SMA200 belum tersedia (sinyal NETRAL = DCA normal, bukan tren rusak). Risiko: 'Korea discount' bisa bertahan lama; siklus memori sama dengan MU."},
     "AMD":   {"catatan": "Momentum AI. Tahan sampai jadwal tranche; hindari kejar di euforia pasca-earnings."},
     "SMH":   {"catatan": "ETF inti semikonduktor (~25 emiten, kemungkinan sudah memegang SK Hynix). Eksekusi sesuai jadwal DCA."},
     "VOO":   {"catatan": "Penyeimbang (dikurangi 15%→7,5% Okt). Mahal secara valuasi tapi tren naik — beli 2 TERMIN (mgg-2 & mgg-4) untuk harga rata lebih baik."},
