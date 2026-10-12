@@ -130,7 +130,8 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
       🟢 <b>BELI</b> — tren naik (harga di atas SMA50 &amp; SMA200) &amp; RSI sehat/oversold (belum euforia).<br>
       🟡 <b>TAHAN / DCA TIPIS</b> — tren naik tapi RSI &gt; 70 (overbought) — jangan kejar, DCA tipis.<br>
       🔴 <b>HATI-HATI</b> — harga di bawah SMA200 (tren jangka panjang melemah).<br>
-      ⚪ <b>NETRAL</b> — konsolidasi / data historis belum cukup — DCA normal.
+      ⚪ <b>NETRAL</b> — konsolidasi / data historis belum cukup — DCA normal.<br>
+      <span style="color:#4338ca;font-weight:600">RENCANA BELI</span> — target alokasi yang BELUM dibeli (bukan posisi existing); sinyal di baris ini untuk timing entry.
     </div>"""
 
     rows = []
@@ -139,8 +140,21 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
         tkr = info["ticker"]
         bobot = info["bobot"]
         grup = info.get("grup", "")
+        status = info.get("status", "dipegang")
+        is_rencana = status == "rencana"
         rupiah = config.MODAL_TRANCHE * bobot
-        alokasi = f"{bobot*100:.1f}% · {_rupiah(rupiah)}"
+        # Beda label alokasi: posisi dipegang vs target yang belum dibeli.
+        if is_rencana:
+            alokasi = f"Target {bobot*100:.1f}% · {_rupiah(rupiah)} · belum dibeli"
+        else:
+            alokasi = f"{bobot*100:.1f}% · {_rupiah(rupiah)}"
+        # Badge kecil di sebelah nama untuk membedakan status posisi.
+        nama_badge = (
+            '<span style="display:inline-block;background:#eef2ff;color:#4338ca;'
+            'font-weight:600;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:6px;'
+            'vertical-align:middle">RENCANA BELI</span>'
+            if is_rencana else ""
+        )
 
         # Sub-header grup (Semikonduktor / Penyeimbang / Kas) — hanya saat grup berganti.
         if grup and grup != grup_terakhir:
@@ -183,15 +197,30 @@ def build_digest(prices: dict[str, dict], usdidr: float | None) -> tuple[str, st
                 'font-weight:600;font-size:11px;padding:2px 8px;border-radius:20px">'
                 'KAS · LIKUID</span>'
             )
+            # Pengingat review RDPU sadar-tanggal: porsi 20% dikunci khusus Oktober,
+            # dijadwalkan diuji ulang November. Mulai November, tampilkan alarm aktif.
+            if today.year == 2026 and today.month >= 11 or today.year > 2026:
+                rdpu_reminder = (
+                    f'<div style="color:#b45309;font-weight:600;line-height:1.45;margin-top:4px">'
+                    f'⏰ Sudah masuk/melewati November — saatnya REVIEW porsi RDPU 20% '
+                    f'(apakah tetap 20% atau sebagian dialokasikan ke posisi).</div>'
+                )
+            else:
+                rdpu_reminder = (
+                    f'<div style="color:{SUBTLE};line-height:1.45;margin-top:4px">'
+                    f'Porsi 20% dikunci khusus Oktober (amunisi koreksi), dijadwalkan '
+                    f'diuji ulang awal November.</div>'
+                )
             catatan = (
                 f'<div style="color:{SUBTLE};line-height:1.45">Instrumen kas (BRI Seruni Pasar Uang III): '
-                f'nilai stabil, likuid. Amunisi untuk menambah posisi saat koreksi — porsi 20% khusus Oktober, diuji ulang November.</div>'
+                f'nilai stabil, likuid. Amunisi untuk menambah posisi saat koreksi.</div>'
+                f'{rdpu_reminder}'
             )
 
         rows.append(f"""
         <tr>
           <td style="padding:14px 12px;border-bottom:1px solid {LINE};vertical-align:top">
-            <div style="font-weight:600;color:{INK}">{nama}</div>
+            <div style="font-weight:600;color:{INK}">{nama}{nama_badge}</div>
             <div style="color:{SUBTLE};font-size:12px;margin-top:2px">{alokasi}</div>
           </td>
           <td style="padding:14px 12px;border-bottom:1px solid {LINE};text-align:right;white-space:nowrap;vertical-align:top">{harga_html}</td>
