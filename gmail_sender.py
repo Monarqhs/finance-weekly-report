@@ -17,6 +17,7 @@ from email.mime.text import MIMEText
 import config
 
 try:
+    from google.auth.exceptions import RefreshError
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import InstalledAppFlow
@@ -67,13 +68,31 @@ def get_service():
 
     # perlu refresh atau login baru
     if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    elif headless:
-        return None, (
-            "Token headless (GMAIL_TOKEN_JSON) tidak valid & tak bisa di-refresh. "
-            "Perbarui secret GMAIL_TOKEN_JSON dengan token.json yang baru dari laptop."
-        )
-    else:
+        # Coba refresh. Kalau token sudah dicabut/kadaluarsa (invalid_grant),
+        # JANGAN crash: di mode lokal jatuh ke login browser; di headless beri
+        # pesan jelas. (Dulu refresh yang gagal melempar RefreshError & bikin
+        # `--auth` mustahil karena token lama menghalangi login baru.)
+        try:
+            creds.refresh(Request())
+        except RefreshError:
+            if headless:
+                return None, (
+                    "Token headless (GMAIL_TOKEN_JSON) sudah kadaluarsa/dicabut "
+                    "(invalid_grant) & tak bisa di-refresh. Buat ulang token.json di "
+                    "laptop (hapus token.json lama lalu `python main.py --auth`), lalu "
+                    "perbarui secret GMAIL_TOKEN_JSON. Catatan: kalau OAuth consent "
+                    "screen masih mode 'Testing', refresh token hangus tiap 7 hari — "
+                    "publikasikan app (Audience -> Publish app) agar permanen."
+                )
+            creds = None  # abaikan token mati, lanjut ke login browser di bawah
+
+    # Masih belum punya kredensial valid (tak ada token, atau refresh gagal/ditolak).
+    if not (creds and creds.valid):
+        if headless:
+            return None, (
+                "Token headless (GMAIL_TOKEN_JSON) tidak valid & tak bisa di-refresh. "
+                "Perbarui secret GMAIL_TOKEN_JSON dengan token.json yang baru dari laptop."
+            )
         if not config.CREDENTIALS_FILE.exists():
             return None, (
                 f"credentials.json belum ada di {config.CREDENTIALS_FILE}.\n"

@@ -24,14 +24,20 @@ EMAIL_SUBJECT_PREFIX = "📊 Digest Portofolio"
 # VOO dikurangi (penyeimbang), MU dipangkas & sebagian dialihkan ke SK Hynix (ADR)
 # karena valuasi SK Hynix lebih murah (~4,8x fwd P/E vs MU ~6,6x) & pemimpin HBM.
 # "grup" dipakai digest untuk mengelompokkan baris: inti-semi / penyeimbang / kas.
+# "status" membedakan posisi yang BENAR-BENAR dipegang vs yang masih RENCANA
+# (belum dieksekusi). Per 12 Okt 2026, posisi riil di broker baru: SMH, MU, SKHY,
+# dan kas. AMD/VOO/Emas tetap target alokasi tapi belum dibeli — digest menandainya
+# "RENCANA BELI" supaya sinyal tidak disalahartikan sebagai posisi existing.
+#   "dipegang" = sudah punya posisi
+#   "rencana"  = target alokasi, belum dibeli (akan dieksekusi pakai kas)
 PORTFOLIO = {
-    "ETF SMH":            {"bobot": 0.35,  "ticker": "SMH",   "grup": "Semikonduktor (inti)"},
-    "Micron (MU)":        {"bobot": 0.10,  "ticker": "MU",    "grup": "Semikonduktor (inti)"},
-    "SK Hynix (ADR)":     {"bobot": 0.10,  "ticker": "SKHY",  "grup": "Semikonduktor (inti)"},
-    "AMD":                {"bobot": 0.075, "ticker": "AMD",   "grup": "Semikonduktor (inti)"},
-    "ETF S&P 500 (VOO)":  {"bobot": 0.075, "ticker": "VOO",   "grup": "Penyeimbang"},
-    "Emas":               {"bobot": 0.10,  "ticker": "GC=F",  "grup": "Penyeimbang"},
-    "Kas Aman (RDPU)":    {"bobot": 0.20,  "ticker": None,    "grup": "Kas"},
+    "ETF SMH":            {"bobot": 0.35,  "ticker": "SMH",   "grup": "Semikonduktor (inti)", "status": "dipegang"},
+    "Micron (MU)":        {"bobot": 0.10,  "ticker": "MU",    "grup": "Semikonduktor (inti)", "status": "dipegang"},
+    "SK Hynix (ADR)":     {"bobot": 0.10,  "ticker": "SKHY",  "grup": "Semikonduktor (inti)", "status": "dipegang"},
+    "AMD":                {"bobot": 0.075, "ticker": "AMD",   "grup": "Semikonduktor (inti)", "status": "rencana"},
+    "ETF S&P 500 (VOO)":  {"bobot": 0.075, "ticker": "VOO",   "grup": "Penyeimbang",          "status": "rencana"},
+    "Emas":               {"bobot": 0.10,  "ticker": "GC=F",  "grup": "Penyeimbang",          "status": "rencana"},
+    "Kas Aman (RDPU)":    {"bobot": 0.20,  "ticker": None,    "grup": "Kas",                  "status": "dipegang"},
 }
 
 # Modal per tranche (untuk konteks di digest)
@@ -47,7 +53,7 @@ SINYAL_RULES = {
     "AMD":   {"catatan": "Momentum AI. Tahan sampai jadwal tranche; hindari kejar di euforia pasca-earnings."},
     "SMH":   {"catatan": "ETF inti semikonduktor (~25 emiten, kemungkinan sudah memegang SK Hynix). Eksekusi sesuai jadwal DCA."},
     "VOO":   {"catatan": "Penyeimbang (dikurangi 15%→7,5% Okt). Mahal secara valuasi tapi tren naik — beli 2 TERMIN (mgg-2 & mgg-4) untuk harga rata lebih baik."},
-    "GC=F":  {"catatan": "Lindung nilai geopolitik. Sedang di rekor (mahal, bukan diskon) — beli 2 TERMIN (mgg-2 & mgg-4), simpan amunisi RDPU untuk koreksi FOMC."},
+    "GC=F":  {"catatan": "Lindung nilai geopolitik (RENCANA, belum dibeli). Beli 2 TERMIN (mgg-2 & mgg-4) untuk harga rata; simpan amunisi RDPU untuk koreksi FOMC. Perhatikan sinyal teknikal terkini di baris ini untuk timing entry."},
 }
 
 # --- Watchlist pantauan (DIPANTAU harganya, TANPA alokasi/bobot) ---
